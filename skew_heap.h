@@ -8,18 +8,19 @@
 #ifndef SKEW_HEAP_H_
 #define SKEW_HEAP_H_
 
+#include<unordered_map>
 #include<stdexcept>
 using namespace std;
 
-template <class T, class Comparator = std::less<T>>
+
 class generic_skew_heap {
 
 	struct Node;
 	using Link = Node *;
 	struct Node {
-		T elem;
+		int elem;
 		Link iz,dr, pad;
-		Node(T const & e, Link i = nullptr , Link d = nullptr, Link p = nullptr): elem(e),iz(i),dr(d),pad(p) {}
+		Node(int const & e, Link i = nullptr , Link d = nullptr, Link p = nullptr): elem(e),iz(i),dr(d),pad(p) {}
 
 		bool operator== (Node const& other){
 			return this->elem == other.elem;
@@ -28,31 +29,32 @@ class generic_skew_heap {
 
 	Link root;
 	int elems;
-	Comparator comp;
+	unordered_map<const int *, Link> * mapa;
 
 public:
 
-	generic_skew_heap(Comparator c = Comparator()){
+	generic_skew_heap(){
 		root = nullptr;
 		elems = 0;
-		comp = c;
-
+		mapa = new unordered_map<const int *, Link>;
 	}
 
-	void insert(T e){
+	void insert(int const & e){
 		if(root != nullptr){
 			Link l = new Node(e);
 			Link r = unir(l, root, root);
 			root = r;
+			mapa->insert({&e, l});
 		}
 		else{
 			root = new Node(e);
+			mapa->insert({&e, root});
 		}
 		elems++;
 	}
 
-	T borra_Min(){
-		T e = this->root->elem;
+	int borra_Min(){
+		int e = this->root->elem;
 		if(root->dr == nullptr && root->iz == nullptr){
 			borra_Nodo(this->root);
 			this->root = nullptr;
@@ -62,12 +64,20 @@ public:
 			borra_Nodo(this->root);
 			this->root = r;
 		}
+		mapa->erase(&e);
+		elems--;
 		return e;
 	}
 
+	void sacaElementos(){
+		cout<< "Hay " << mapa->size() << " elementos en el mapa" << endl;
+		cout<< "Hay " << this->getElems() << " elementos en el monticulo " << endl;
+		for(auto e: *mapa){
+			cout << e.first << e.second->elem << "  "<< endl;
+		}
+	}
 
-
-	T min(){
+	int min(){
 		if (root != nullptr){
 			return root->elem;
 		}
@@ -109,9 +119,9 @@ protected:
 	}
 private:
 
-	T borra(Link origen){
+	int borra(Link origen){
 		if(origen != nullptr){
-			T elem = origen->elem;
+			int elem = origen->elem;
 			Link i = origen->iz;
 			Link d = origen->dr;
 			Link p = origen->pad;

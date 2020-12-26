@@ -112,10 +112,14 @@ int main(){
 
 	for(int j = 10; j > 0; j--){
 		m.insert(j);
+		if(j == 7 || j == 3 || j == 1){
+			m.borra_Min();
+		}
 	}
 
-
-	for(int i = 1; i < 11; i++){
+	int c = m.getElems();
+	m.sacaElementos();
+	for(int i = 1; i < c; i++){
 		int e = m.borra_Min();
 		cout << e << " ";
 	}
