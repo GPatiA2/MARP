@@ -12,15 +12,15 @@
 #include<stdexcept>
 using namespace std;
 
-
+template <class T, class Comparator = std::less<T>>
 class generic_skew_heap {
 
 	struct Node;
 	using Link = Node *;
 	struct Node {
-		int elem;
+		T elem;
 		Link iz,dr, pad;
-		Node(int const & e, Link i = nullptr , Link d = nullptr, Link p = nullptr): elem(e),iz(i),dr(d),pad(p) {}
+		Node(T const & e, Link i = nullptr , Link d = nullptr, Link p = nullptr): elem(e),iz(i),dr(d),pad(p) {}
 
 		bool operator== (Node const& other){
 			return this->elem == other.elem;
@@ -29,17 +29,19 @@ class generic_skew_heap {
 
 	Link root;
 	int elems;
-	unordered_map<const int *, Link> * mapa;
+	Comparator comp;
+	unordered_map<const T *, Link> * mapa;
 
 public:
 
-	generic_skew_heap(){
+	generic_skew_heap(Comparator c = Comparator()){
 		root = nullptr;
 		elems = 0;
-		mapa = new unordered_map<const int *, Link>;
+		comp = c;
+		mapa = new unordered_map<const T *, Link>;
 	}
 
-	void insert(int const & e){
+	void insert(T const & e){
 		if(root != nullptr){
 			Link l = new Node(e);
 			Link r = unir(l, root, root);
@@ -53,8 +55,8 @@ public:
 		elems++;
 	}
 
-	int borra_Min(){
-		int e = this->root->elem;
+	T borra_Min(){
+		T e = this->root->elem;
 		if(root->dr == nullptr && root->iz == nullptr){
 			borra_Nodo(this->root);
 			this->root = nullptr;
@@ -77,7 +79,7 @@ public:
 		}
 	}
 
-	int min(){
+	T min(){
 		if (root != nullptr){
 			return root->elem;
 		}
@@ -119,9 +121,9 @@ protected:
 	}
 private:
 
-	int borra(Link origen){
+	T borra(Link origen){
 		if(origen != nullptr){
-			int elem = origen->elem;
+			T elem = origen->elem;
 			Link i = origen->iz;
 			Link d = origen->dr;
 			Link p = origen->pad;
