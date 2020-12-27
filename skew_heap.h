@@ -45,6 +45,13 @@ public:
 		mapa = new unordered_map<int, Link>;
 	}
 
+	void clear(){
+		mapa->clear();
+		liberaNodos(root);
+		cont = 0;
+		root = nullptr;
+	}
+
 	void insert(clave c, valor v){
 		if(root != nullptr){
 			Link l = new Node(c,v);
@@ -153,6 +160,14 @@ protected:
 		}
 	}
 private:
+
+	void liberaNodos(Link l){
+		if(l != nullptr){
+			liberaNodos(l->dr);
+			liberaNodos(l->iz);
+			this->borra_Nodo(l);
+		}
+	}
 
 	int borra(Link origen){
 		if(origen != nullptr){

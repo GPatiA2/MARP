@@ -15,35 +15,6 @@
 using namespace std;
 
 
-
-
-
-struct arista{
-	int o;
-	int d;
-	int c;
-
-	arista(int origen, int destino, int coste): o(origen), d(destino), c(coste) {}
-
-	bool operator == (arista const& other){
-		return this->o == other.o && this->d == other.d && this->c == other.c;
-	}
-};
-
-struct comp{
-
-	bool operator() (arista const& a1, arista const& a2){
-		if(a1.c < a2.c){
-			return true;
-		}
-		else{
-			return false;
-		}
-	}
-
-};
-
-
 skew_heap obtenerDatos(unordered_set<int> & v){
 
 	for(int i = 1; i < 12; i++){
