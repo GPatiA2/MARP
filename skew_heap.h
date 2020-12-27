@@ -66,8 +66,8 @@ public:
 		cont++;
 	}
 
-	int borra_Min(){
-		int e = this->root->c;
+	pair<clave,valor> borra_Min(){
+		pair<clave,valor> e = std::make_pair(this->root->c, this->root->v);
 		if(root->dr == nullptr && root->iz == nullptr){
 			borra_Nodo(this->root);
 			this->root = nullptr;
@@ -77,9 +77,13 @@ public:
 			borra_Nodo(this->root);
 			this->root = r;
 		}
-		mapa->erase(e);
+		mapa->erase(e.first);
 		cont--;
 		return e;
+	}
+
+	bool contains(clave c){
+		return mapa->count(c);
 	}
 
 	void decrease_key(clave c, valor vn){
@@ -111,25 +115,29 @@ public:
 
 	}
 
-	void sacaElementos(){
+	void sacaElementos() const {
 		cout<< "Hay " << mapa->size() << " ventos en el mapa" << endl;
-		cout<< "Hay " << this->getElems() << " ventos en el monticulo " << endl;
+		cout<< "Hay " << cont << " ventos en el monticulo " << endl;
 		for(auto e: *mapa){
 			cout << "Clave = " <<  e.second->c << " Valor = "<< e.second->v << "  "<< endl;
 		}
 	}
 
-	int min(){
+	pair<clave,valor> min() const {
 		if (root != nullptr){
-			return root->v;
+			return pair<clave,valor>(root->c,root->v);
 		}
 		else{
 			throw std::domain_error("Monticulo vacio");
 		}
 	}
 
-	int getElems(){ return cont; }
+	int getElems() const { return cont; }
 
+	~skew_heap(){
+		liberaNodos(root);
+		delete mapa;
+	}
 
 protected:
 
@@ -160,6 +168,7 @@ protected:
 		}
 	}
 private:
+
 
 	void liberaNodos(Link l){
 		if(l != nullptr){

@@ -7,93 +7,117 @@
 
 #include <iostream>
 #include <stdexcept>
-#include <unordered_set>
 #include <vector>
+#include <list>
 #include <limits.h>
 #include <unordered_map>
 #include "skew_heap.h"
+#include "grafo.h"
 using namespace std;
 
 
-skew_heap obtenerDatos(unordered_set<int> & v){
+void dijsktra(grafo<int> const & g, grafo<int>::vertice const & v0){
+	using node = grafo<int>::vertice;
 
-	for(int i = 1; i < 12; i++){
-		v.insert(i);
-	}
+	cout << "El vertice inicial es " << v0 << endl;
 
-	skew_heap ar;
-
-//	ar.insert(arista(1,3,10));
-//	ar.insert({2,8,40});
-//	ar.insert({3,4,38});
-//	ar.insert({3,5,41});
-//	ar.insert({4,10, 24});
-//	ar.insert({5,6, 25});
-//	ar.insert({5,7, 83});
-//	ar.insert({6,8, 60});
-//	ar.insert({7,10, 13});
-//	ar.insert({7,9, 17});
-//	ar.insert({8,9, 60});
-//	ar.insert({9,11, 31});
-//	ar.insert({10,11, 14});
-//
-//	ar.insert({2,1, 30});
-//	ar.insert({3,1, 10});
-//	ar.insert({8,2, 40});
-//	ar.insert({4,3, 38});
-//	ar.insert({5,3, 41});
-//	ar.insert({10,4, 24});
-//	ar.insert({6,5, 25});
-//	ar.insert({7,5, 83});
-//	ar.insert({8,6, 60});
-//	ar.insert({10,7, 13});
-//	ar.insert({9,7, 17});
-//	ar.insert({9,8, 60});
-//	ar.insert({11,9, 31});
-//	ar.insert({11,10, 14});
-
-	return ar;
-}
-
-
-void dijkstra(int v0, unordered_set<int> & v, skew_heap & a){
-
+	skew_heap h;
 	vector<int> distancias;
 	vector<int> predecesores;
-	for(int i = 0; i < v.size(); i++){
-		distancias[i] = INT_MAX;
-		predecesores[i] = v0;
+	unordered_map<node, bool> candidatos;
+	int nv = g.getNumVertices();
+
+	//inicializacion de vectores de distancias y predecesores
+	for(int i = 0; i < nv ; i++){
+		distancias.push_back(INT_MAX);
+		predecesores.push_back(v0);
 	}
 
-	for(int j = 0; j < v.size()-2; j++){
+	//inicializacion de monticulo
+	for(grafo<int>::gnode ng : g.adyacentes(v0)){
+		h.insert(ng->vert, ng->cost);
+		distancias[ng->vert] = ng->cost;
+		predecesores[ng->vert] = v0;
+		candidatos[ng->vert] = true;
+	}
 
+	//Saco el vertice inicial de los candidatos
+	candidatos[v0] = false;
 
+	//Bucle principal
+
+	for(int j = 0; j < nv-2; j++){
+		cout <<"J = "<<  j << endl;
+		pair<grafo<int>::vertice, int> p = h.borra_Min();
+		node actual = p.first;
+		candidatos[p.first] = false;
+		cout << "Actual = " << actual << endl;
+		for(grafo<int>::gnode ng : g.adyacentes(actual)){
+			cout << candidatos[ng->vert] << endl;
+			if(candidatos[ng->vert]){
+				cout << "Mirando vertice " << ng->vert << endl;
+				if( ng->cost + distancias[actual] < distancias[ng->vert] ){
+					if(h.contains(ng->vert)){
+						h.decrease_key(ng->vert, ng->cost + distancias[actual]);
+					}
+					else{
+						h.insert(ng->vert, ng->cost + distancias[actual]);
+					}
+				}
+			}
+		}
+
+	}
+
+	for(unsigned int i = 0; i < distancias.size(); i++){
+		cout << "Vertice " << i << " distancia = " << distancias[i] << " predecesor = " << predecesores[i] << endl;
 	}
 }
+
+void rellenarGrafo(grafo<int> & g){
+
+	for(int i = 1; i < 12; i++){
+		g.insertarVertice(i);
+	}
+
+	g.crearArista(1,2,30);
+	g.crearArista(1,3,10);
+	g.crearArista(2,8,40);
+	g.crearArista(3,4,38);
+	g.crearArista(3,5,41);
+	g.crearArista(4,10,24);
+	g.crearArista(5,6,25);
+	g.crearArista(5,7,83);
+	g.crearArista(6,8,60);
+	g.crearArista(7,10,13);
+	g.crearArista(7,9,17);
+	g.crearArista(8,9,22);
+	g.crearArista(9,11,31);
+	g.crearArista(10,11,14);
+
+	g.crearArista(1,2,30);
+	g.crearArista(3,1,10);
+	g.crearArista(8,2,40);
+	g.crearArista(4,3,38);
+	g.crearArista(5,3,41);
+	g.crearArista(10,4,24);
+	g.crearArista(6,5,25);
+	g.crearArista(7,5,83);
+	g.crearArista(8,6,60);
+	g.crearArista(10,7,13);
+	g.crearArista(9,7,17);
+	g.crearArista(9,8,22);
+	g.crearArista(11,9,31);
+	g.crearArista(11,10,14);
+
+}
+
 
 int main(){
 
-	unordered_set<int> v;
-	//skew_heap a;
-	//a = obtenerDatos(v);
-	//dijkstra(v,a);
-
-	skew_heap m;
-	int i = 0;
-	for(int j = 10; j > 0; j--){
-		m.insert(j,i);
-//		if(j == 7 || j == 3 || j == 1){
-//			m.borra_Min();
-//		}
-		i++;
-	}
-	m.decrease_key(1,-10);
-
-	m.sacaElementos();
-//	for(int i = 1; i < c; i++){
-//		int e = m.borra_Min();
-//		cout << e << " ";
-//	}
+	grafo<int> g;
+	rellenarGrafo(g);
+	dijsktra(g, g.getFirst());
 
 
 	return 0;
