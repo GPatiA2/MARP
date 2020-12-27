@@ -12,51 +12,55 @@
 #include<stdexcept>
 using namespace std;
 
-template <class T, class Comparator = std::less<T>>
-class generic_skew_heap {
+using clave = int;
+using valor = int;
+class skew_heap {
 
 	struct Node;
 	using Link = Node *;
 	struct Node {
-		T elem;
+		clave c;
+		valor v;
 		Link iz,dr, pad;
-		Node(T const & e, Link i = nullptr , Link d = nullptr, Link p = nullptr): elem(e),iz(i),dr(d),pad(p) {}
+		Node(int clave, int valor, Link i = nullptr , Link d = nullptr, Link p = nullptr): c(clave), v(valor) ,iz(i),dr(d),pad(p) {}
 
 		bool operator== (Node const& other){
-			return this->elem == other.elem;
+			return this->c == other.c && this->v == other.v;
+		}
+
+		bool operator< (Node const& other){
+			return this->v < other.v;
 		}
 	};
 
 	Link root;
-	int elems;
-	Comparator comp;
-	unordered_map<const T *, Link> * mapa;
+	int cont;
+	unordered_map<clave, Link> * mapa;
 
 public:
 
-	generic_skew_heap(Comparator c = Comparator()){
+	skew_heap(){
 		root = nullptr;
-		elems = 0;
-		comp = c;
-		mapa = new unordered_map<const T *, Link>;
+		cont = 0;
+		mapa = new unordered_map<int, Link>;
 	}
 
-	void insert(T const & e){
+	void insert(clave c, valor v){
 		if(root != nullptr){
-			Link l = new Node(e);
+			Link l = new Node(c,v);
 			Link r = unir(l, root, root);
 			root = r;
-			mapa->insert({&e, l});
+			mapa->insert({c, l});
 		}
 		else{
-			root = new Node(e);
-			mapa->insert({&e, root});
+			root = new Node(c,v);
+			mapa->insert({v, root});
 		}
-		elems++;
+		cont++;
 	}
 
-	T borra_Min(){
-		T e = this->root->elem;
+	int borra_Min(){
+		int e = this->root->c;
 		if(root->dr == nullptr && root->iz == nullptr){
 			borra_Nodo(this->root);
 			this->root = nullptr;
@@ -66,29 +70,58 @@ public:
 			borra_Nodo(this->root);
 			this->root = r;
 		}
-		mapa->erase(&e);
-		elems--;
+		mapa->erase(e);
+		cont--;
 		return e;
 	}
 
+	void decrease_key(clave c, valor vn){
+		auto it = mapa->find(c);
+		if(it != mapa->end()){
+			Link l = it->second;
+			if(l->v > vn){
+				if(l->pad->iz == l){
+					l->pad->iz = nullptr;
+					l->pad = nullptr;
+				}
+				else{
+					l->pad->dr = nullptr;
+					l->pad = nullptr;
+				}
+
+				l->v = vn;
+
+				Link r = unir(root,l,root);
+				root = r;
+			}
+			else{
+				throw domain_error("Intentas cambiar un valor por otro mayor");
+			}
+		}
+		else{
+			throw domain_error("La clave no se encuentra en el monticulo");
+		}
+
+	}
+
 	void sacaElementos(){
-		cout<< "Hay " << mapa->size() << " elementos en el mapa" << endl;
-		cout<< "Hay " << this->getElems() << " elementos en el monticulo " << endl;
+		cout<< "Hay " << mapa->size() << " ventos en el mapa" << endl;
+		cout<< "Hay " << this->getElems() << " ventos en el monticulo " << endl;
 		for(auto e: *mapa){
-			cout << e.first << e.second->elem << "  "<< endl;
+			cout << "Clave = " <<  e.second->c << " Valor = "<< e.second->v << "  "<< endl;
 		}
 	}
 
-	T min(){
+	int min(){
 		if (root != nullptr){
-			return root->elem;
+			return root->v;
 		}
 		else{
 			throw std::domain_error("Monticulo vacio");
 		}
 	}
 
-	int getElems(){ return elems; }
+	int getElems(){ return cont; }
 
 
 protected:
@@ -103,7 +136,7 @@ protected:
 			return a;
 		}
 		else{
-			if(comp(a->elem, b->elem)){
+			if(a->v < b->v){
 				Link ader = a->dr;
 				a->dr = a->iz;
 				a->iz = unir(ader,b, a);
@@ -121,22 +154,24 @@ protected:
 	}
 private:
 
-	T borra(Link origen){
+	int borra(Link origen){
 		if(origen != nullptr){
-			T elem = origen->elem;
+			int v = origen->v;
 			Link i = origen->iz;
 			Link d = origen->dr;
 			Link p = origen->pad;
 
 			bool lado;
-			if(p->iz->elem == elem){lado = true;}
+			if(p->iz == origen){lado = true;}
 			else {lado = false;}
+
 			borra_Nodo(origen);
+
 			Link r = unir(i,d,p);
 			if(lado){p->iz = r;}
 			else{p->dr = r;}
-			elems--;
-			return elem;
+			cont--;
+			return v;
 		}
 		else{
 			throw std::domain_error("Monticulo vacio");
