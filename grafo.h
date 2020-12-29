@@ -65,6 +65,10 @@ public:
 		}
 	}
 
+	const unordered_set<vertice> & vertSet () const {
+		return this->vertices;
+	}
+
 	void crearArista(vertice origen, vertice destino, int c){
 		insertarArista(origen, destino, c);
 		n_aristas++;

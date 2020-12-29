@@ -28,7 +28,9 @@ void dijsktra(grafo<int> const & g, grafo<int>::vertice const & v0){
 	int nv = g.getNumVertices();
 
 	//inicializacion de vectores de distancias y predecesores
-	for(int i = 0; i < nv ; i++){
+	for(auto &v : g.vertSet()){
+		candidatos[v] = true;
+		h.insert(v, INT_MAX);
 		distancias.push_back(INT_MAX);
 		predecesores.push_back(v0);
 	}
@@ -36,9 +38,13 @@ void dijsktra(grafo<int> const & g, grafo<int>::vertice const & v0){
 	//inicializacion de monticulo
 	for(grafo<int>::gnode ng : g.adyacentes(v0)){
 		h.insert(ng->vert, ng->cost);
-		distancias[ng->vert] = ng->cost;
-		predecesores[ng->vert] = v0;
-		candidatos[ng->vert] = true;
+		distancias[ng->vert - 1] = ng->cost;
+		predecesores[ng->vert - 1] = v0;
+		cout << "Adyacente  = " << ng->vert << endl;
+	}
+
+	for(auto & e : candidatos){
+		cout << "V = " << e.first << " Bool = " << e.second << endl;
 	}
 
 	//Saco el vertice inicial de los candidatos
@@ -49,20 +55,18 @@ void dijsktra(grafo<int> const & g, grafo<int>::vertice const & v0){
 	for(int j = 0; j < nv-2; j++){
 		cout <<"J = "<<  j << endl;
 		pair<grafo<int>::vertice, int> p = h.borra_Min();
+		cout << "Extraido vertice " << p.first << " del monticulo" <<endl;
 		node actual = p.first;
 		candidatos[p.first] = false;
 		cout << "Actual = " << actual << endl;
 		for(grafo<int>::gnode ng : g.adyacentes(actual)){
-			cout << candidatos[ng->vert] << endl;
 			if(candidatos[ng->vert]){
 				cout << "Mirando vertice " << ng->vert << endl;
-				if( ng->cost + distancias[actual] < distancias[ng->vert] ){
-					if(h.contains(ng->vert)){
-						h.decrease_key(ng->vert, ng->cost + distancias[actual]);
-					}
-					else{
-						h.insert(ng->vert, ng->cost + distancias[actual]);
-					}
+				if( ng->cost + distancias[actual - 1] < distancias[ng->vert - 1] ){
+					cout << "Distancia mas corta desde " << actual << " hasta " << ng->vert << endl;
+					distancias[ng->vert - 1] = ng->cost + distancias[actual - 1];
+					predecesores[ng->vert - 1] = ng->vert;
+					h.decrease_key(ng->vert, distancias[ng->vert - 1]);
 				}
 			}
 		}
