@@ -18,7 +18,7 @@ template <class T>
 class grafo{
 
 public:
-	using coste = float;
+	using coste = int;
 	using vertice = T;
 
 	struct node {
@@ -85,6 +85,19 @@ public:
 
 	int getNumVertices() const { return vertices.size(); }
 
+	string print() const {
+		string s;
+		for(auto v : vertices){
+			string vlist = std::to_string(v);
+			vlist += " ";
+			for(gnode gn : *aristas.at(v)){
+				vlist += "(" + std::to_string(gn->vert) + " , " + std::to_string(gn->cost) + " ) ,";
+			}
+			s += vlist;
+			s += '\n';
+		}
+		return s;
+	}
 
 protected:
 

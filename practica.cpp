@@ -13,6 +13,7 @@
 #include <unordered_map>
 #include "skew_heap.h"
 #include "grafo.h"
+#include "graph_generator.h"
 using namespace std;
 
 
@@ -40,11 +41,6 @@ void dijsktra(grafo<int> const & g, grafo<int>::vertice const & v0){
 		h.insert(ng->vert, ng->cost);
 		distancias[ng->vert - 1] = ng->cost;
 		predecesores[ng->vert - 1] = v0;
-		cout << "Adyacente  = " << ng->vert << endl;
-	}
-
-	for(auto & e : candidatos){
-		cout << "V = " << e.first << " Bool = " << e.second << endl;
 	}
 
 	//Saco el vertice inicial de los candidatos
@@ -55,17 +51,13 @@ void dijsktra(grafo<int> const & g, grafo<int>::vertice const & v0){
 	for(int j = 0; j < nv-2; j++){
 		cout <<"J = "<<  j << endl;
 		pair<grafo<int>::vertice, int> p = h.borra_Min();
-		cout << "Extraido vertice " << p.first << " del monticulo" <<endl;
 		node actual = p.first;
 		candidatos[p.first] = false;
-		cout << "Actual = " << actual << endl;
 		for(grafo<int>::gnode ng : g.adyacentes(actual)){
 			if(candidatos[ng->vert]){
-				cout << "Mirando vertice " << ng->vert << endl;
 				if( ng->cost + distancias[actual - 1] < distancias[ng->vert - 1] ){
-					cout << "Distancia mas corta desde " << actual << " hasta " << ng->vert << endl;
 					distancias[ng->vert - 1] = ng->cost + distancias[actual - 1];
-					predecesores[ng->vert - 1] = ng->vert;
+					predecesores[ng->vert - 1] = actual;
 					h.decrease_key(ng->vert, distancias[ng->vert - 1]);
 				}
 			}
@@ -74,7 +66,7 @@ void dijsktra(grafo<int> const & g, grafo<int>::vertice const & v0){
 	}
 
 	for(unsigned int i = 0; i < distancias.size(); i++){
-		cout << "Vertice " << i << " distancia = " << distancias[i] << " predecesor = " << predecesores[i] << endl;
+		cout << "Vertice " << i+1 << " distancia = " << distancias[i] << " predecesor = " << predecesores[i] << endl;
 	}
 }
 
@@ -119,8 +111,12 @@ void rellenarGrafo(grafo<int> & g){
 
 int main(){
 
-	grafo<int> g;
-	rellenarGrafo(g);
+//	grafo<int> g;
+//	rellenarGrafo(g);
+
+	graph_generator gg(5,0.5,50);
+	grafo<int> g = gg.generar(false);
+	cout << g.print() << endl;
 	dijsktra(g, g.getFirst());
 
 

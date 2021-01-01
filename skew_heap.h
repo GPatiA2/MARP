@@ -1,9 +1,3 @@
-/*
- * skew_heap.h
- *
- *  Created on: 26 dic. 2020
- *      Author: Guille
- */
 
 #ifndef SKEW_HEAP_H_
 #define SKEW_HEAP_H_
