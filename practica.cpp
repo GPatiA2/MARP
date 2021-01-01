@@ -23,8 +23,8 @@ void dijsktra(grafo<int> const & g, grafo<int>::vertice const & v0){
 	cout << "El vertice inicial es " << v0 << endl;
 
 	skew_heap h;
-	vector<int> distancias;
-	vector<int> predecesores;
+	unordered_map<node,int> distancias;
+	unordered_map<node,node> predecesores;
 	unordered_map<node, bool> candidatos;
 	int nv = g.getNumVertices();
 
@@ -32,15 +32,15 @@ void dijsktra(grafo<int> const & g, grafo<int>::vertice const & v0){
 	for(auto &v : g.vertSet()){
 		candidatos[v] = true;
 		h.insert(v, INT_MAX);
-		distancias.push_back(INT_MAX);
-		predecesores.push_back(v0);
+		distancias[v] = INT_MAX;
+		predecesores[v] = v0;
 	}
 
 	//inicializacion de monticulo
 	for(grafo<int>::gnode ng : g.adyacentes(v0)){
 		h.insert(ng->vert, ng->cost);
-		distancias[ng->vert - 1] = ng->cost;
-		predecesores[ng->vert - 1] = v0;
+		distancias[ng->vert] = ng->cost;
+		predecesores[ng->vert] = v0;
 	}
 
 	//Saco el vertice inicial de los candidatos
@@ -55,18 +55,18 @@ void dijsktra(grafo<int> const & g, grafo<int>::vertice const & v0){
 		candidatos[p.first] = false;
 		for(grafo<int>::gnode ng : g.adyacentes(actual)){
 			if(candidatos[ng->vert]){
-				if( ng->cost + distancias[actual - 1] < distancias[ng->vert - 1] ){
-					distancias[ng->vert - 1] = ng->cost + distancias[actual - 1];
-					predecesores[ng->vert - 1] = actual;
-					h.decrease_key(ng->vert, distancias[ng->vert - 1]);
+				if( ng->cost + distancias[actual] < distancias[ng->vert] ){
+					distancias[ng->vert] = ng->cost + distancias[actual];
+					predecesores[ng->vert] = actual;
+					h.decrease_key(ng->vert, distancias[ng->vert]);
 				}
 			}
 		}
 
 	}
 
-	for(unsigned int i = 0; i < distancias.size(); i++){
-		cout << "Vertice " << i+1 << " distancia = " << distancias[i] << " predecesor = " << predecesores[i] << endl;
+	for(auto p : distancias){
+		cout << "Vertice " << p.first << " distancia = " << p.second  << " predecesor = " << predecesores.at(p.first) << endl;
 	}
 }
 
@@ -111,12 +111,12 @@ void rellenarGrafo(grafo<int> & g){
 
 int main(){
 
-//	grafo<int> g;
-//	rellenarGrafo(g);
+	grafo<int> g;
+	rellenarGrafo(g);
 
-	graph_generator gg(5,0.5,50);
-	grafo<int> g = gg.generar(false);
-	cout << g.print() << endl;
+//	graph_generator gg(5,0.5,50);
+//	grafo<int> g = gg.generar(false);
+//	cout << g.print() << endl;
 	dijsktra(g, g.getFirst());
 
 
