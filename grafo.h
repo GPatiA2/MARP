@@ -1,9 +1,3 @@
-/*
- * grafo.h
- *
- *  Created on: 27 dic. 2020
- *      Author: Guille
- */
 
 #ifndef GRAFO_H_
 #define GRAFO_H_
@@ -99,6 +93,44 @@ public:
 		return s;
 	}
 
+	string adyMat() const {
+		bool mat[vertices.size()][vertices.size()];
+		for(unsigned int i = 0; i < vertices.size(); i++){
+			for(unsigned int j = 0; j < vertices.size(); j++){
+				mat[i][j] = false;
+			}
+		}
+		for(auto v : vertices) {
+			for(gnode gn : *aristas.at(v)){
+				mat[v-1][gn->vert-1] = true;
+			}
+		}
+		string s;
+		for(unsigned int i = 0; i < vertices.size(); i++){
+			string fila = "";
+			for(unsigned int j = 0; j < vertices.size(); j++){
+				if(j == vertices.size() - 1){
+					if(mat[i][j]){
+						fila += "1";
+					}
+					else{
+						fila += "0";
+					}
+				}
+				else{
+					if(mat[i][j]){
+						fila += "1, ";
+					}
+					else{
+						fila += "0, ";
+					}
+				}
+			}
+			s += fila;
+			s += '\n';
+		}
+		return s;
+	}
 protected:
 
 	void insertarArista(vertice origen, vertice destino, coste c){
