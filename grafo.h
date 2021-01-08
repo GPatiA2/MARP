@@ -40,6 +40,17 @@ public:
 		n_aristas = 0;
 	}
 
+	~grafo(){
+		for(auto p : aristas){
+            auto it = p.second->rbegin();
+            while(it != p.second->rend()){
+                delete *it;
+                it ++;
+            }
+			delete p.second;
+		}
+	}
+
 	void insertarVertice(vertice const & v){
 		vertices.insert(v);
 		if(aristas.count(v) == 0){

@@ -25,12 +25,14 @@ public:
 
 	grafo<int> generar(bool casoPeor){
 		grafo<int> g;
-		srand(time(NULL));
+		srand(1);
 		for(int i = 1; i < numVertices+1; i++){
+			cout << "insertando vertice " << i << endl;
 			g.insertarVertice(i);
 		}
 
 		for(int i = 1; i < numVertices+1; i++){
+			cout << "arista para vertice " << i << endl;
 			for(int j = 1; j < numVertices+1; j++){
 				if(i != j){
 					float coste = (int) rand() % coste_maximo;
