@@ -11,6 +11,9 @@
 #include <list>
 #include <limits.h>
 #include <unordered_map>
+#include <ctime>
+#include <chrono>
+#include <cmath>
 #include "skew_heap.h"
 #include "grafo.h"
 #include "graph_generator.h"
@@ -54,23 +57,36 @@ void dijsktra(grafo<int> const & g, grafo<int>::vertice const & v0){
 					h.decrease_key(ng->vert, distancias[ng->vert]);
 				}
 			}
-			else{
-//				cout << "FALSE" << endl;
-			}
 		}
 
 	}
-	cout << "DONE ";
 }
 
-int main(){
-
-	graph_generator gg(15000,0.7,70);
-	for(int i = 0; i < 3 ; i++){
-		grafo<int> g = gg.generar(true);
-		dijsktra(g, g.getFirst());
-		cout << i << endl;
+int main(int argc, char * argv[]){
+	if(argc < 4 || argc > 5){
+		cout << "Error: Usage is ./practica <initial_nodes> <max nodes> <inc> <max_weight>" << endl;
+		return 0;
 	}
+
+	graph_generator gg(1,0.5,std::stoi(argv[4]));
+	cout << "# Vertices" << "	" << "Tiempo" << endl;
+	for(int i = std::stoi(argv[1]); i < std::stoi(argv[2]) ; i+=std::stoi(argv[3])){
+		gg.setNumVertices(i);
+		float tiempo = 0;
+		for(int j = 0; j < 3; j++){
+			grafo<int> g = gg.generar(true);
+			auto start = std::chrono::steady_clock::now();
+			dijsktra(g, g.getFirst());
+			auto end = std::chrono::steady_clock::now();
+			tiempo += std::chrono::duration<double, std::milli>(end - start).count();
+		}
+
+		tiempo = tiempo / 3.0;
+
+		cout << i << "	" << tiempo << '\n';
+
+	}
+
 	cout << "DONE" << endl;
 
 	return 0;

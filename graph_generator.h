@@ -1,9 +1,4 @@
-/*
- * graph_generator.h
- *
- *  Created on: 1 ene. 2021
- *      Author: Guille
- */
+
 
 #ifndef GRAPH_GENERATOR_H_
 #define GRAPH_GENERATOR_H_
@@ -23,16 +18,16 @@ public:
 
 	graph_generator(int nv, float a, int cM) : numVertices(nv), prob_arista(a), coste_maximo(cM) {}
 
+	void setNumVertices(int v){ numVertices = v;}
+
 	grafo<int> generar(bool casoPeor){
 		grafo<int> g;
 		srand(1);
 		for(int i = 1; i < numVertices+1; i++){
-			cout << "insertando vertice " << i << endl;
 			g.insertarVertice(i);
 		}
 
 		for(int i = 1; i < numVertices+1; i++){
-			cout << "arista para vertice " << i << endl;
 			for(int j = 1; j < numVertices+1; j++){
 				if(i != j){
 					float coste = (int) rand() % coste_maximo;
