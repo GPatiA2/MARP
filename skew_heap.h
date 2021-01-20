@@ -1,4 +1,8 @@
-
+/*
+ * Guillermo Garcia Patiño Lenza
+ * MAR Grupo A
+ * skew_heap.h
+ */
 #ifndef SKEW_HEAP_H_
 #define SKEW_HEAP_H_
 
@@ -6,10 +10,30 @@
 #include<stdexcept>
 using namespace std;
 
+
+/*
+ * Esta clase implementa los monticulos sesgados
+ * Puede hacerse generica, pero se han empleado claves y valores enteros
+ * 	para simplificar la implementacion
+ *
+ * Contiene:
+ *   1- un arbol binario al que se accede por su raiz 'root'
+ *   2- un entero que tiene el valor del numero de elementos del monticulo
+ *   3- un mapa (clave-puntero a nodo) que permite encontrar el nodo en el que se encuentra una
+ *         clave en tiempo constante
+ */
+
 using clave = int;
 using valor = int;
+
 class skew_heap {
 
+	/*
+	 * Este Struct representa un nodo del monticulo sesgado
+	 * Se incluyen punteros al padre para facilitar el decreaseKey
+	 *
+	 * Se renombra el puntero a este struct como Link
+	 */
 	struct Node;
 	using Link = Node *;
 	struct Node {
@@ -39,61 +63,72 @@ public:
 		mapa = {};
 	}
 
+	/*
+	 * Este metodo borra el contenido del monticulo
+	 */
 	void clear(){
 		mapa.clear();
-		liberaNodos(root);
+		libera(root);
 		cont = 0;
 		root = nullptr;
 	}
 
+	/*
+	 * Metodo que inserta la clave 'c' con valor 'v' en el monticulo
+	 * Como se ha visto en clase, se crea un monticulo sesgado con un solo elemento y
+	 * 	se une al monticulo principal para insertarlo
+	 */
 	void insert(clave c, valor v){
-		if(!mapa.count(c)){
-			if(root != nullptr){
-				Link l = new Node(c,v);
-				Link r = unir(l, root, root);
-				root = r;
-				mapa.insert({c, l});
-			}
-			else{
-				root = new Node(c,v);
-				mapa.insert({c, root});
-			}
-			cont++;
+		if(root != nullptr){
+			Link l = new Node(c,v);
+			Link r = unir(l, root, root);
+			root = r;
+			mapa.insert({c, l});
 		}
 		else{
-			throw domain_error("Esta clave ya se encuentra en el monticulo");
+			root = new Node(c,v);
+			mapa.insert({c, root});
 		}
+		cont++;
 	}
 
 	bool empty() const {return cont == 0 ; }
 
+	/*
+	 * Este metodo borra el elemento minimo del monticulo, que se encuentra en
+	 * 	la raiz, y devuelve el par (clave, valor) que lo representaba.
+	 *
+	 * Distingue entre 2 casos:
+	 *   1- Si solo hay un elemento, se limita a borrar el nodo que lo contiene
+	 *   		y ajustar los punteros necesarios
+	 *
+	 *   2- Si hay mas de un elemento, descuelga el hijo izquierdo y el hijo derecho
+	 *   		de la raiz. Borra la raiz, y apunta el puntero de la raiz a la raiz del
+	 *   		monticulo resultante de la union de ambos hijos
+	 */
 	pair<clave,valor> borra_Min(){
-
-//		cout << "Borrando " << endl;
-
 
 		pair<clave,valor> e = std::make_pair(this->root->c, this->root->v);
 		if(mapa.erase(e.first)){
 			if(root->dr == nullptr && root->iz == nullptr){
-				cout << "CASO 1" << endl;
 				borra_Nodo(this->root);
 				this->root = nullptr;
 			}
 			else{
 				Link l = root->iz;
 				Link r = root->dr;
+
 				root->iz = nullptr;
 				root->dr = nullptr;
 				if(l != nullptr){l->pad = nullptr;}
 				if(r != nullptr){r->pad = nullptr;}
-//				cout << "Voy a borrar " << endl;
-//				cout << preorden(root) << endl;
+
 				borra_Nodo(this->root);
 				root = nullptr;
+
 				root = unir(l, r, nullptr);
 				root->pad = root;
-//				cout << preorden(root) << endl;
-//				cout << "Borrado" << endl;
+
 			}
 			cont--;
 			return e;
@@ -104,22 +139,37 @@ public:
 		}
 	}
 
+	/*
+	 * Metodo que consulta si una clave se encuentra en el monticulo
+	 */
 	bool contains(clave c) const {
 		return mapa.find(c) != mapa.end();
 	}
 
+	/*
+	 * Metodo que decrece una clave y le asigna el valor vn
+	 * Esencialmente, el funcionamiento del metodo consiste en:
+	 * 	1- Descolgar el nodo que se va a decrecer del arbol original
+	 * 	2- Decrecer la clave del del nodo que se ha descolgado
+	 * 	3- Unir el monticulo original con el arbol que se ha descolgado
+	 *
+	 * Ademas, en caso de que el nodo a decrecer sea la raiz, simplemente
+	 * 	decrece la clave que hay en ese nodo, ahorrando los pasos restantes
+	 *
+	 * De esta manera, la operacion pasa a estar en O(lg n) donde n son los elementos
+	 *  actuales del montículo, ya que se accede en tiempo constante al nodo de la clave que
+	 *  se quiere decrecer.
+	 */
 	void decrease_key(clave c, valor vn){
-//		sacaElementos();
 		auto it = mapa.find(c);
 		if(it != mapa.end()){
+			//Obtengo un puntero al nodo que almacena la clave a decrecer
 			Link l = it->second;
 			if(l == root){ root -> v =  vn ;}
 			else{
 				if(l->v > vn){
-//					cout << "Voy a decrecer " << c << " " << l->v << " a " << vn << endl;
-//					cout << " a = " << ((root == nullptr)? "Vacio" : std::to_string(root->c) + " " + std::to_string(root->v)) << endl;
-//					cout << " b = " << l->c << " " << l->v << endl;
-//					cout << preorden(root) << endl;
+					//Descuelgo el nodo que tiene la clave que quiero decrecer del
+					// monticulo principal
 					if(l->pad->iz == l){
 						l->pad->iz = nullptr;
 						l->pad = nullptr;
@@ -128,12 +178,11 @@ public:
 						l->pad->dr = nullptr;
 						l->pad = nullptr;
 					}
-
+					//Decrezco la clave
 					l->v = vn;
+					//Uno los dos montículos que quedan
 					Link r = unir(root,l,root);
 					root = r;
-//					cout << preorden(root) << endl;
-//					cout << "Decrecido" << endl;
 				}
 				else{
 					throw domain_error("Intentas cambiar un valor por otro mayor");
@@ -146,13 +195,19 @@ public:
 
 	}
 
-	void sacaElementos() const {
-		cout<< "Hay " << mapa.size() << " ventos en el mapa" << endl;
-		cout<< "Hay " << cont << " ventos en el monticulo " << endl;
+	/*
+	 * Metodo que permite consultar todos los elementos del monticulo
+	 */
+	string sacaElementos() const {
+		string s = "";
+		s+= "Hay " + std::to_string( mapa.size() ) + " elementos en el mapa \n";
+		s+= "Hay " + std::to_string( cont ) +  " elementos en el monticulo \n" ;
 		for(auto e: mapa){
-			cout << "Clave = " <<  e.first << " Valor = "<< e.second->v << "  "<< endl;
+			s+= "Clave = " + std::to_string( e.first ) + " Valor = " + std::to_string( e.second->v ) + " \n ";
 		}
+		return s;
 	}
+
 
 	pair<clave,valor> min() const {
 		if (root != nullptr){
@@ -166,12 +221,14 @@ public:
 	int getElems() const { return cont; }
 
 	~skew_heap(){
-		liberaNodos(root);
+		libera(root);
 	}
 
 protected:
-
-	string preorden(Link l){
+	/*
+	 * Metodo auxiliar para consultar el arbol del monticulo en preorden
+	 */
+	string preorden(Link l) const {
 		if(l == nullptr) return "";
 		string s = "(" + std::to_string(l->c) + " " + std::to_string(l->v) + ") ";
 		string s1 = preorden(l->iz);
@@ -179,14 +236,19 @@ protected:
 		return (s + s1 + s2);
 	}
 
+	/*
+	 * Metodo para unir dos nodos a y b .
+	 * La raiz del monticulo resultante de esa union acabara
+	 * 		siendo hijo del nodo p
+	 *
+	 *  El coste de esta operación tiene un coste amortizado O(lg n)
+	 */
 	Link unir(Link a, Link b, Link p){
  		if(a == nullptr){
-// 			cout << "Caso 1" << endl;
  			b->pad = p;
 			return b;
 		}
 		else if(b == nullptr){
-//			cout << "Caso 2" << endl;
 			a->pad = p;
 			return a;
 		}
@@ -203,78 +265,21 @@ protected:
 			a->pad = p;
 			return a;
 		}
-//			if( a != nullptr && (b == nullptr || a->v < b->v )){
-////				cout << "Caso 3" << endl;
-//				Link ader = a->dr;
-//				a->dr = a->iz;
-//				a->iz = unir(ader,b, a);
-//				a->iz->pad = a;
-//				a->pad = p;
-//				return a;
-//			}
-//			else{
-////				cout << "Caso 4" << endl;
-//				Link bder = b->dr;
-//				b->dr = b->iz;
-//				b->iz = unir(a, bder, b);
-//				b->iz->pad = b;
-//				b->pad = p;
-//				return b;
-//			}
-//		if(a == nullptr && b == nullptr){ return nullptr; }
-//		else{
-//			if( a != nullptr && (b == nullptr || a->v < b->v )){
-////				cout << "Caso 3" << endl;
-//				Link ader = a->dr;
-//				a->dr = a->iz;
-//				a->iz = unir(ader,b, a);
-//				a->pad = p;
-//				return a;
-//			}
-//			else{
-////				cout << "Caso 4" << endl;
-//				Link bder = b->dr;
-//				b->dr = b->iz;
-//				b->iz = unir(a, bder, b);
-//				b->pad = p;
-//				return b;
-//			}
-//		}
 	}
+
 private:
 
+	/*
+	 * En la parte privada solo se incluyen los diferentes metodos que se emplean para
+	 * 	eliminar nodos del arbol.
+	 *
+	 *
+	 * libera : borra todos los nodos que estan por debajo del nodo L y al propio nodo
+	 * 				tambien
+	 *
+	 * borra_Nodo : borra el nodo que recibe como parametro, devolviendo la memoria que ocupaba
+	 */
 
-	void liberaNodos(Link l){
-		if(l != nullptr){
-			liberaNodos(l->dr);
-			liberaNodos(l->iz);
-			this->borra_Nodo(l);
-		}
-	}
-
-	int borra(Link origen){
-		if(origen != nullptr){
-			int v = origen->v;
-			Link i = origen->iz;
-			Link d = origen->dr;
-			Link p = origen->pad;
-
-			bool lado;
-			if(p->iz == origen){lado = true;}
-			else {lado = false;}
-
-			borra_Nodo(origen);
-
-			Link r = unir(i,d,p);
-			if(lado){p->iz = r;}
-			else{p->dr = r;}
-			cont--;
-			return v;
-		}
-		else{
-			throw std::domain_error("Monticulo vacio");
-		}
-	}
 
 	static void libera(Link a){
 		if(a != nullptr){
@@ -286,7 +291,6 @@ private:
 
 	static void borra_Nodo(Link a){
 		if (a != nullptr) {
-//			cout << "Borro nodo con elem " << a->c << endl;
 		delete a; }
 	}
 };
